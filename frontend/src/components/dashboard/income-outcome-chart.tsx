@@ -62,9 +62,12 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
   }
 
   const hasData = data.some((d) => d.income > 0 || d.outcome > 0)
+  const chartDescription = hasData
+    ? 'Line chart showing monthly income and outcome trends. Use the legend to identify each series.'
+    : 'No financial chart data is available for the selected period.'
 
   return (
-    <Card className="border-border/60">
+    <Card className="border-border/60" role="img" aria-label={chartDescription}>
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold">Income vs. Outcome</CardTitle>
         <CardDescription>Monthly revenue and expenditure evolution</CardDescription>
@@ -75,17 +78,19 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <figure>
+            <figcaption className="sr-only">{chartDescription}</figcaption>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 12, fill: 'var(--color-foreground)' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 12, fill: 'var(--color-foreground)' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
@@ -94,7 +99,7 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
               <Tooltip content={<CustomTooltip />} />
               <Legend
                 formatter={(value) => (
-                  <span className="text-xs text-muted-foreground capitalize">{value}</span>
+                  <span className="text-xs text-foreground capitalize">{value}</span>
                 )}
               />
               <Line
@@ -115,8 +120,9 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
                 dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
-            </LineChart>
-          </ResponsiveContainer>
+              </LineChart>
+            </ResponsiveContainer>
+          </figure>
         )}
       </CardContent>
     </Card>
