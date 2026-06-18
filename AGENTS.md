@@ -37,4 +37,4 @@ Before taking action (analyzing code, modifying files, or generating outputs), a
 | Agent directories must exist | `AGENTS.md`, `.agents/rules/**/*.md`, `.agents/skills/**` | Always | true |
 
 Para el detalle completo de cada regla, revisar los archivos individuales en `./.agents/rules`.
-
+Las reglas ya están creadas en este directorio y habia entendido en paso 2 que debia crearlas. Por eso pongo esta nota en Paso 3.
