@@ -36,7 +36,7 @@ export function KPICard({ label, value, helperText, icon: Icon, variant, loading
 
   if (loading) {
     return (
-      <Card className="border-border/60">
+      <Card className="min-h-44 border-border/60">
         <CardContent className="p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-28" />
@@ -50,7 +50,7 @@ export function KPICard({ label, value, helperText, icon: Icon, variant, loading
   }
 
   return (
-    <Card className="border-border/60 hover:border-border transition-colors">
+    <Card className="min-h-44 border-border/60 transition-colors hover:border-border">
       <CardContent className="p-6 flex flex-col gap-4" role="group" aria-label={label}>
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase text-pretty">

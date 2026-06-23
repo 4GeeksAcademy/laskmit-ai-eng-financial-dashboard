@@ -1,8 +1,15 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import dynamic from "next/dynamic";
+import { startTransition, useEffect, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
-import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
-import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   type FinancialMovement,
   type KPIMetrics,
@@ -10,10 +17,40 @@ import {
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
+function ChartCardSkeleton() {
+  return (
+    <Card className="border-border/60">
+      <CardHeader className="pb-4">
+        <Skeleton className="h-5 w-52" />
+        <Skeleton className="mt-1 h-3 w-64" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-[280px] w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  );
+}
+
+const IncomeOutcomeChart = dynamic(
+  () =>
+    import("@/components/dashboard/income-outcome-chart").then((module) => ({
+      default: module.IncomeOutcomeChart,
+    })),
+  { loading: ChartCardSkeleton, ssr: false },
+);
+
+const ProfitPercentChart = dynamic(
+  () =>
+    import("@/components/dashboard/profit-percent-chart").then((module) => ({
+      default: module.ProfitPercentChart,
+    })),
+  { loading: ChartCardSkeleton, ssr: false },
+);
+
+async function fetchFinancialData(signal: AbortSignal): Promise<FinancialMovement[]> {
+  const response = await fetch(`${API_BASE_URL}/api/metrics`, { signal });
   if (!response.ok) {
     throw new Error(`Failed to fetch financial data: ${response.status}`);
   }
@@ -27,19 +64,37 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFinancialData()
+    const abortController = new AbortController();
+
+    fetchFinancialData(abortController.signal)
       .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
+        const nextMetrics = computeKPIs(movements);
+        const nextMonthlyData = computeMonthlyData(movements);
+
+        startTransition(() => {
+          setMetrics(nextMetrics);
+          setMonthlyData(nextMonthlyData);
+          setError(null);
+        });
       })
-      .catch(() => {
+      .catch((fetchError: unknown) => {
+        if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
+          return;
+        }
+
         setError(
-          "No se pudo cargar la informacion financiera. Revisa la API de backend.",
+          "Unable to load financial data. Check that the backend API is available.",
         );
       })
       .finally(() => {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       });
+
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   return (
