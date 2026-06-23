@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type MonthlyDataPoint } from '@/lib/financial-types'
@@ -47,6 +48,11 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
+  const chartId = useId()
+  const titleId = `${chartId}-title`
+  const descriptionId = `${chartId}-description`
+  const tableCaptionId = `${chartId}-table-caption`
+
   if (loading) {
     return (
       <Card className="border-border/60">
@@ -66,57 +72,87 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold">Income vs. Outcome</CardTitle>
-        <CardDescription>Monthly revenue and expenditure evolution</CardDescription>
+        <CardTitle id={titleId} className="text-base font-semibold">Income vs. Outcome</CardTitle>
+        <CardDescription id={descriptionId}>Monthly revenue and expenditure evolution</CardDescription>
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
+          <div
+            className="flex h-[280px] items-center justify-center text-muted-foreground text-sm"
+            role="status"
+            aria-live="polite"
+          >
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                width={48}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                formatter={(value) => (
-                  <span className="text-xs text-muted-foreground capitalize">{value}</span>
-                )}
-              />
-              <Line
-                type="monotone"
-                dataKey="income"
-                name="income"
-                stroke="var(--chart-income)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="outcome"
-                name="outcome"
-                stroke="var(--chart-outcome)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <figure aria-labelledby={titleId} aria-describedby={`${descriptionId} ${tableCaptionId}`}>
+            <div role="img" aria-labelledby={titleId} aria-describedby={`${descriptionId} ${tableCaptionId}`}>
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.9} />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                    width={48}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    formatter={(value) => (
+                      <span className="text-xs text-muted-foreground capitalize">{value}</span>
+                    )}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="income"
+                    name="income"
+                    stroke="var(--chart-income)"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 0 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="outcome"
+                    name="outcome"
+                    stroke="var(--chart-outcome)"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <figcaption id={tableCaptionId} className="visually-hidden">
+              Line chart with monthly income and outcome values. A data table is available for assistive technologies below.
+            </figcaption>
+            <table className="visually-hidden">
+              <caption>Income and outcome by month</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">Income</th>
+                  <th scope="col">Outcome</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.month}>
+                    <th scope="row">{item.month}</th>
+                    <td>{formatCurrency(item.income)}</td>
+                    <td>{formatCurrency(item.outcome)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </figure>
         )}
       </CardContent>
     </Card>
