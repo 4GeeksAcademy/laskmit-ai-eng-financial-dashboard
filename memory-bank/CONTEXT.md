@@ -4,7 +4,7 @@
 
 Proyecto full-stack para visualizar métricas financieras con:
 
-- Frontend en React + TypeScript + Vite + Tailwind + Recharts.
+- Frontend en React + TypeScript + Vite + Tailwind + Recharts convertido a Next.js.
 - Backend en FastAPI (Python) que entrega datos mock y endpoints de análisis.
 - Ejecución local con Docker Compose.
 
